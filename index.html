@@ -4,17 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task 1</title>
-
     <link rel="stylesheet" type="text/css" href="css/stylesheet.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-    
     <div id='container' class="container">
         <div class="column lcol">
             <div class="header">
                 <div class="header-controls">
                     <button id="pauseResumeBtn" class="icon" title="Pause"><i class="fas fa-pause fa-3x"></i></button>
+                    <button id="toggleBotBtn" class="bot-button" title="Toggle Bot Mode">Bot Mode: OFF</button>
                 </div>
                 <div class="header-timer">
                     <button id="blueButton" class="blue-timer">00:00</button>
@@ -22,33 +21,25 @@
                 </div>
             </div>
         </div>
-
         <div class="column column-middle">
-            
-            
-
             <div class="board-container">
-                <!-- Board container -->
                 <div class="board" id="board">
                     <div id="overlay" class="overlay">
                         <div id="overlay-content" class="overlay-content">
                             <p id="overlay-text">Game paused</p>
                             <div>
                                 <button id="pauseResumeOverlay" class="icon" title="Resume"><i class="fa fa-play"></i></button>
-                            <button id="resetBtn" class="icon" title="Reset"><i class="fas fa-sync-alt"></i></button>
+                                <button id="resetBtn" class="icon" title="Reset"><i class="fas fa-sync-alt"></i></button>
                             </div>
-                            
                         </div>
                     </div>
                 </div>
             </div>
-
             <div class="footer">
                 <button disabled id="rot-l" class="icon"><i class="fas fa-redo fa-3x"></i></button>
                 <button disabled id="rot-r" class="icon"><i class="fas fa-undo fa-3x"></i></button>
             </div>
         </div>
-
         <div class="column rcol">
             <div id="moves" class="moves-container">
                 <div id="moves-b" class="moves-b"></div>
@@ -56,12 +47,9 @@
             </div>
         </div>
     </div>
-
-    <!-- Audio elements for sound effects -->
     <audio id="shootSound" src="css/sounds/shoot.wav"></audio>
     <audio id="winSound" src="css/sounds/win.wav"></audio>
     <audio id="moveSound" src="css/sounds/move.wav"></audio>
-
     <script src="game.js"></script>
 </body>
 </html>
