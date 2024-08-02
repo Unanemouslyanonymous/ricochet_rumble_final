@@ -4,7 +4,6 @@ const pieceTable = {
     'rr': 'r-ricochet',
     'rs': 'r-semi-ricochet',
     'rc': 'r-cannon',
-
     'bt': 'b-titan',
     'bb': 'b-tank',
     'br': 'b-ricochet',
@@ -33,8 +32,9 @@ let paused = false;
 let movesList = [];
 const blueInitTime = 300;
 const redInitTime = 300;
-let blueTime = blueInitTime; 
+let blueTime = blueInitTime;
 let redTime = redInitTime;
+let botMode = false;
 
 let Cells = {};
 let Pieces = {};
@@ -153,7 +153,6 @@ class Piece {
 
         let bullet = document.createElement('img');
         bullet.className = 'bullet ' + Turn;
-        // bullet.src = 'assets/directional-bullet.png'; // Use an asset for the bullet
         bullet.style.left = getAbsolutePosition(cannon)[0] - 10 + 'px';
         bullet.style.top = getAbsolutePosition(cannon)[1] - 10 + 'px';
         document.getElementById('container').appendChild(bullet);
@@ -495,7 +494,6 @@ function playerWin(p) {
 
     pauseResumeOverlay.remove();
 
-    // Store moves in local storage
     localStorage.setItem('gameHistory', JSON.stringify(movesList));
     playSound('winSound');
 }
@@ -545,8 +543,10 @@ function switchTurns() {
     if (Turn === 'b') {
         Turn = 'r';
         startRedTimer();
-        // Let the bot make a move
-        setTimeout(botMove, 1000);
+        if (botMode) {
+            
+            setTimeout(botMove, 1000);
+        }
     } else if (Turn === 'r') {
         Turn = 'b';
         startBlueTimer();
@@ -558,29 +558,47 @@ function switchTurns() {
 
 function botMove() {
     let botPieces = Object.values(Pieces).filter(piece => piece && piece.team === 'r');
-    let randomPiece = botPieces[Math.floor(Math.random() * botPieces.length)];
+    let validMoves = [];
 
-    let validMoves = randomPiece.getValid();
+   
+    for (let piece of botPieces) {
+        let cell = Cells[piece.position[0] + '-' + piece.position[1]];
+        let moves = cell.getValid();
+        for (let move of moves) {
+            validMoves.push({ piece, move });
+        }
+    }
+
     if (validMoves.length > 0) {
         let randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
-        let targetCell = Cells[randomMove];
+        let targetCell = Cells[randomMove.move];
+        let movingPiece = randomMove.piece;
 
-        let movesEntry = {
-            team: randomPiece.team,
-            type: randomPiece.type,
+        let oldCellId = movingPiece.position[0] + '-' + movingPiece.position[1];
+        document.getElementById(oldCellId).innerHTML = '';
+        Cells[oldCellId].piece = null;
+
+        
+        movingPiece.position = targetCell.position;
+        targetCell.piece = movingPiece;
+
+        
+        delete Pieces[movingPiece.id];
+        movingPiece.id = movingPiece.position[0] + '-' + movingPiece.position[1] + '-' + movingPiece.team + movingPiece.type + movingPiece.orientation;
+        Pieces[movingPiece.id] = movingPiece;
+
+        let elem = movingPiece.element();
+        document.getElementById(`${targetCell.position[0]}-${targetCell.position[1]}`).appendChild(elem);
+
+            let movesEntry = {
+            team: movingPiece.team,
+            type: movingPiece.type,
             position: {
-                old: randomPiece.position,
+                old: oldCellId.split('-').map(Number),
                 new: targetCell.position
             },
-        }
+        };
         updateMoves(movesEntry);
-
-        randomPiece.position = targetCell.position;
-        targetCell.piece = randomPiece;
-
-        document.getElementById(randomPiece.id).remove();
-        let elem = randomPiece.element();
-        document.getElementById(`${targetCell.position[0]}-${targetCell.position[1]}`).appendChild(elem);
 
         playSound('moveSound');
     }
@@ -597,6 +615,8 @@ function generateGrid() {
             Cells[cell.id] = cell;
 
             elem.addEventListener('click', () => {
+                if (botMode && Turn === 'r') return; 
+
                 let validMoves = cell.getValid();
 
                 if (previousValidMoves.includes(cell.id)) {
@@ -761,6 +781,14 @@ document.addEventListener('DOMContentLoaded', function() {
     updateButtonDisplay(blueButton, blueTime);
     updateButtonDisplay(redButton, redTime);
     controls();
+
+    const toggleBotBtn = document.getElementById('toggleBotBtn');
+    toggleBotBtn.addEventListener('click', () => {
+        botMode = !botMode;
+        toggleBotBtn.textContent = `Bot Mode: ${botMode ? 'ON' : 'OFF'}`;
+    });
+
+    document.getElementById('overlay').style.display = 'none';
 });
 
 function playSound(soundId) {
